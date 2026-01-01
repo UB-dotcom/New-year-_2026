@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Happy New Year</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins', sans-serif;
+}
+
+body{
+    background: radial-gradient(circle at bottom, #020111, #000000);
+    overflow:hidden;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    color:white;
+    padding:30px 15px;
+}
+
+/* Title */
+.title{
+    font-size:3rem;
+    letter-spacing:4px;
+    text-shadow:
+      0 0 10px #ff00ff,
+      0 0 20px #00ffff,
+      0 0 40px #ff0080;
+    margin-top:20px;
+}
+
+/* Thought */
+.thought{
+    margin-top:25px;
+    max-width:90%;
+    font-size:1.4rem;
+    text-shadow:0 0 10px #00ffff;
+    opacity:0;
+    transition:opacity 1.5s ease;
+}
+
+/* Countdown */
+#countdown{
+    margin-top:40px;
+    font-size:2rem;
+    text-shadow:0 0 20px #00ffff;
+}
+
+/* Share Button */
+.share{
+    margin-top:25px;
+    padding:10px 22px;
+    border-radius:25px;
+    background:#25D366;
+    color:white;
+    border:none;
+    font-size:1rem;
+    cursor:pointer;
+    box-shadow:0 0 15px #25D366;
+}
+
+/* Tap Note */
+.tap{
+    margin-top:auto;
+    margin-bottom:20px;
+    font-size:0.9rem;
+    opacity:0.7;
+}
+
+/* Canvas */
+canvas{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:-1;
+}
+
+/* Mobile tuning */
+@media(max-width:600px){
+    .title{font-size:2.4rem;}
+    .thought{font-size:1.2rem;}
+    #countdown{font-size:1.6rem;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="title" id="title"></div>
+<div class="thought" id="thought"></div>
+<div id="countdown"></div>
+
+<button class="share" onclick="shareWish()">Share on WhatsApp</button>
+<div class="tap">Tap anywhere for music 🎵</div>
+
+<audio id="music" loop>
+    <source src="https://pixabay.com/music/modern-classical-new-year-music-457947/"" type="audio/mpeg">
+</audio>
+
+<canvas id="fireworks"></canvas>
+
+<script>
+// -------- AUTO YEAR --------
+const year = new Date().getFullYear() + 1;
+document.getElementById("title").innerText = `✨ Happy New Year  ✨`;
+
+// -------- THOUGHTS --------
+const thoughts=[
+ "🌟 Every new year brings new strength and new thoughts.",
+ "🔥 Your future is created by what you do today.",
+ "💫 New Year, New Mindset, New Results.",
+ "🚀 Dreams don’t expire, try again.",
+ "🌈 Make this year so good that last year gets jealous.",
+ "✨ Be proud of how far you’ve come.",
+ "🎯 Small steps every day lead to big changes.",
+ "🌟 नया साल नई सोच और नए मौके लाता है।",
+ "🔥 खुद पर विश्वास रखो, यही सबसे बड़ी ताकत है।",
+ "🌈 हर दिन एक नया मौका है बेहतर बनने का।",
+ "✨ जो बीत गया उसे छोड़ो, आगे बढ़ो।",
+ "🚀 मेहनत कभी धोखा नहीं देती।"
+];
+
+const thoughtBox=document.getElementById("thought");
+
+function changeThought(){
+    thoughtBox.style.opacity=0;
+    setTimeout(()=>{
+        thoughtBox.innerText=thoughts[Math.floor(Math.random()*thoughts.length)];
+        thoughtBox.style.opacity=1;
+    },800);
+}
+changeThought();
+setInterval(changeThought,6000);
+
+// -------- COUNTDOWN --------
+const newYearTime = new Date(`January 1, ${year} 00:00:00`).getTime();
+
+function updateCountdown(){
+    const now=Date.now();
+    const diff=newYearTime-now;
+
+    if(diff<=0){
+        countdown.innerHTML="🎉 WELCOME 🎉";
+        megaBlast = true;
+        return;
+    }
+
+    const d=Math.floor(diff/(1000*60*60*24));
+    const h=Math.floor((diff/(1000*60*60))%24);
+    const m=Math.floor((diff/(1000*60))%60);
+    const s=Math.floor((diff/1000)%60);
+
+    countdown.innerHTML=`${d} Days ${h} Hours ${m} Min ${s} Sec`;
+}
+setInterval(updateCountdown,1000);
+
+// -------- MUSIC --------
+document.body.addEventListener("click",()=>{
+    document.getElementById("music").play();
+},{once:true});
+
+// -------- WHATSAPP SHARE --------
+function shareWish(){
+    const text=`✨ Happy New Year ${year} ✨\n\n${thoughtBox.innerText}`;
+    window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank");
+}
+
+// -------- FIREWORKS (MIDNIGHT BLAST) --------
+const canvas=document.getElementById("fireworks");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+window.onresize=()=>{canvas.width=innerWidth;canvas.height=innerHeight;}
+
+let megaBlast=false;
+
+class Firework{
+    constructor(){
+        this.x=Math.random()*canvas.width;
+        this.y=canvas.height;
+        this.ty=Math.random()*canvas.height/2;
+        this.c=`hsl(${Math.random()*360},100%,50%)`;
+        this.s=Math.random()*3+4;
+        this.e=false;
+        this.p=[];
+    }
+    explode(){
+        const count = megaBlast ? 150 : 80;
+        for(let i=0;i<count;i++){
+            this.p.push({
+                x:this.x,y:this.y,
+                a:Math.random()*Math.PI*2,
+                v:Math.random()*5,
+                o:1
+            });
+        }
+    }
+    update(){
+        if(!this.e){
+            this.y-=this.s;
+            if(this.y<=this.ty){this.e=true;this.explode();}
+        }
+    }
+    draw(){
+        if(!this.e){
+            ctx.fillStyle=this.c;
+            ctx.fillRect(this.x,this.y,2,2);
+        }else{
+            this.p.forEach(pt=>{
+                pt.x+=Math.cos(pt.a)*pt.v;
+                pt.y+=Math.sin(pt.a)*pt.v;
+                pt.o-=0.02;
+                ctx.globalAlpha=pt.o;
+                ctx.fillStyle=this.c;
+                ctx.fillRect(pt.x,pt.y,2,2);
+            });
+            ctx.globalAlpha=1;
+        }
+    }
+}
+
+let fireworks=[];
+function animate(){
+    ctx.fillStyle="rgba(0,0,0,0.25)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    const rate = megaBlast ? 0.2 : 0.08;
+    if(Math.random()<rate)fireworks.push(new Firework());
+
+    fireworks.forEach((f,i)=>{
+        f.update();f.draw();
+        if(f.e && f.p.every(p=>p.o<=0))fireworks.splice(i,1);
+    });
+    requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+</body>
+</html>
